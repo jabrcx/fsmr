@@ -1,28 +1,32 @@
-fsmr_pure_mrmpi: fsmr_pure_mrmpi.c
-	mpicc -g -O -c fsmr_pure_mrmpi.c
-	mpic++ -g -O -o fsmr_pure_mrmpi fsmr_pure_mrmpi.o -lmrmpi
+define TEST_INSTRUCTIONS
+double check output against:
+	find /opt/mrmpi-2013-09-17 -type f | wc -l
 
-fsmr_hybrid_dftw_mrmpi: fsmr_pure_mrmpi.c
-	mpicc -g -O -c fsmr_hybrid_dftw_mrmpi.c
-	mpic++ -g -O -o fsmr_hybrid_dftw_mrmpi fsmr_hybrid_dftw_mrmpi.o -lmrmpi -ldftw
+double check total size against:
+	find /opt/mrmpi-2013-09-17 -type f | xargs stat -c%s | awk '{sum+=$$1} END {print sum}'
 
-test_pure_mrmpi: fsmr_pure_mrmpi
-	$(info double check output against:)
-	$(info - find /opt/mrmpi-2013-09-17 -type f | wc -l)
-	$(info double check total size against:)
-	$(info - find /opt/mrmpi-2013-09-17 -type f | xargs stat -c%s | awk '{sum+=$$1} END {print sum}')
-	$(info)
-	mpirun -np 3 ./fsmr_pure_mrmpi /opt/mrmpi-2013-09-17
+---
 
-test_hybrid_dftw_mrmpi: fsmr_hybrid_dftw_mrmpi
-	$(info double check output against:)
-	$(info - find /opt/mrmpi-2013-09-17 -type f | wc -l)
-	$(info double check total size against:)
-	$(info - find /opt/mrmpi-2013-09-17 -type f | xargs stat -c%s | awk '{sum+=$$1} END {print sum}')
-	$(info)
-	mpirun -np 3 ./fsmr_hybrid_dftw_mrmpi /opt/mrmpi-2013-09-17
+endef
+export TEST_INSTRUCTIONS
 
-all: fsmr_pure_mrmpi fsmr_hybrid_dftw_mrmpi
+
+cmapreduce_extra.o: cmapreduce_extra.cpp
+	mpic++ -g -O -c cmapreduce_extra.cpp
+
+fsmr.o: fsmr.c
+	mpicc -g -O -c fsmr.c
+
+fsmr: cmapreduce_extra.o fsmr.o
+	mpic++ -g -O -o fsmr cmapreduce_extra.o fsmr.o -lmrmpi -ldftw
+
+
+test: fsmr
+	@echo "$$TEST_INSTRUCTIONS"
+	mpirun -np 3 ./fsmr /opt/mrmpi-2013-09-17
+
+
+all: fsmr
 
 clean:
-	rm -f fsmr_pure_mrmpi fsmr_hybrid_dftw_mrmpi *.stdout *.stderr
+	rm -f fsmr *.o *.stdout *.stderr output.*

@@ -1,0 +1,3 @@
+why use dftw and not mrmpi's built-in recursion?
+	dftw is specialized for file tree walking, with performance analysis
+	dftw allows callbacks on all filesystem entities, including directories, too.
