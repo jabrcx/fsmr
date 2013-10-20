@@ -1,30 +1,5 @@
 /*
 
-Example showing basic usage of MapReduce-MPI.
-
-This example uses the MR_map form where the argument is directory (or multiple 
-directories) to recurse.  Specifically, in this case, usage is:
-
-	mrmpi_ftw_count_and_du DIRECTORY
-
-If it fails to stat any files along the way, it writes a message about it to 
-stderr, but otherwise keeps moving on, excluding it from the results, and will 
-still exit with status 0 if nothing else goes wrong.  Such behavior would not 
-be desired in a production program!
-
-This counts files and sums their sizes.  Map is like:
-
-	emit {"count": 1}, {"size": sb.st_size}
-
-and reduce is like:
-
-	sum all values for each of the two unique keys, "count" and "size"
-
-Note that since all the counts and sizes are in a single key, respectively, the 
-reduce is restricted to just one processor for each (and possibly one overall, 
-since this makes no attempt to ensure the hashing puts them on separate 
-processors).
-
 Copyright (c) 2013, John A. Brunelle
 All rights reserved.
 
@@ -43,8 +18,8 @@ All rights reserved.
 
 
 //the keys (easier than using strings "count" and "size")
-static char count_key = 1;
-static char size_key = 2;
+static char key_count = 1;
+static char key_size = 2;
 
 
 void mymap(int itask, char *filename, void *kv, void *ptr) {
@@ -59,17 +34,17 @@ void mymap(int itask, char *filename, void *kv, void *ptr) {
 	//ignore symlinks
 	if (!S_ISLNK(sb.st_mode)) {
 		size = sb.st_size;
-		MR_kv_add(kv, &size_key, 1, (char*)&size, sizeof(off_t));
+		MR_kv_add(kv, &key_size, 1, (char*)&size, sizeof(off_t));
 		
 		//the value here in theory is always 1, so don't even bother, just use NULL
-		MR_kv_add(kv, &count_key, 1, NULL, 0); 
+		MR_kv_add(kv, &key_count, 1, NULL, 0); 
 	}
 }
 
 void myreduce(char *key, int keybytes, char *multivalue, int nvalues, int *valuebytes, void *kv, void *ptr) {
-	if (*key==count_key) {
+	if (*key==key_count) {
 		printf("total path count: %d\n", nvalues);
-	} else if (*key==size_key) {
+	} else if (*key==key_size) {
 		uint64_t totalsize = 0;
 
 		int i;
