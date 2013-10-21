@@ -1,6 +1,20 @@
-love dftw, but need a way to get data out
-dftw is a general map operation... one general way to manage output is as a "reduce".
+fsmr -- filesystem mapreduce
 
-why use dftw and not mrmpi's built-in recursion?
-	dftw is specialized for file tree walking, with performance analysis
-	dftw allows callbacks on all filesystem entities, including directories, too.
+This is for running a mapreduce where the inputs are every entity in a 
+filesystem hierarchy.  It's built using libdftw[1] and libmrmpi[2].
+
+I love dftw, but I need a way to combine and retrieve output.  dftw is a 
+general "map" operation... so one general way to manage output is as a 
+"reduce".
+
+Why use dftw and not mrmpi's built-in recursion?  dftw is specialized for file 
+tree walking, with performance analysis to back it up (though I have not 
+compared).  Also, dftw allows callbacks on all filesystem entities, including 
+directories, too.
+
+[1] https://github.com/hpc/libdftw
+[2] http://mapreduce.sandia.gov/
+
+
+Copyright (c) 2013, John A. Brunelle
+All rights reserved.

@@ -20,7 +20,7 @@ static char size_key = 2;
 static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
 	off_t size;
 	uid_t uid;
-
+	
 	switch (tflag) {
 		case FTW_D:
 			return 0;

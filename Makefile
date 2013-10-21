@@ -1,35 +1,25 @@
-define TEST_INSTRUCTIONS
-
-double check output against:
-	find /opt/mrmpi-2013-09-17 -type f | wc -l
-
-double check total size against:
-	find /opt/mrmpi-2013-09-17 -type f | xargs stat -c%s | awk '{sum+=$$1} END {print sum}'
-
-endef
-export TEST_INSTRUCTIONS
+#
+# Copyright (c) 2013, John A. Brunelle
+# All rights reserved.
+#
 
 
-cmapreduce_extra.o: cmapreduce_extra.cpp
-	mpic++ -g -O -c cmapreduce_extra.cpp
+CC = mpicc
+CPP = mpic++
+CFLAGS += -g -O0 -fPIC
+CPPFLAGS += -g -O0 -fPIC
+LDFLAGS +=
 
-fsmr.o: fsmr.c
-	mpicc -g -O -c fsmr.c
+all: libfsmr.so
 
-du_by_owner.o: du_by_owner.c
-	mpicc -g -O -c du_by_owner.c
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
 
+%.o: %.cpp
+	$(CPP) $(CPPFLAGS) -o $@ -c $<
 
-du_by_owner: cmapreduce_extra.o fsmr.o du_by_owner.o
-	mpic++ -g -O -o du_by_owner cmapreduce_extra.o fsmr.o du_by_owner.o -lmrmpi -ldftw
-
-
-test: du_by_owner
-	@echo "$$TEST_INSTRUCTIONS"
-	mpirun -np 3 ./du_by_owner /opt/mrmpi-2013-09-17
-
-
-all: du_by_owner
+libfsmr.so: fsmr.o cmapreduce_extra.o
+	$(CPP) $(CPPFLAGS) -shared fsmr.o cmapreduce_extra.o -ldftw -o libfsmr.so
 
 clean:
-	rm -f du_by_owner *.o *.stdout *.stderr output.*
+	rm -f *.o *.so

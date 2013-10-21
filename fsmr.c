@@ -75,6 +75,6 @@ int fsmr(const char *dirpath, map_cb_t map, reduce_cb_t reduce) {
 	MPI_Comm_free(mrcomm);
 	MPI_Finalize();
 	free(mrcomm);
-	
+
 	return 0;
 }
