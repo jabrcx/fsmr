@@ -1,11 +1,10 @@
 define TEST_INSTRUCTIONS
+
 double check output against:
 	find /opt/mrmpi-2013-09-17 -type f | wc -l
 
 double check total size against:
 	find /opt/mrmpi-2013-09-17 -type f | xargs stat -c%s | awk '{sum+=$$1} END {print sum}'
-
----
 
 endef
 export TEST_INSTRUCTIONS
@@ -17,16 +16,20 @@ cmapreduce_extra.o: cmapreduce_extra.cpp
 fsmr.o: fsmr.c
 	mpicc -g -O -c fsmr.c
 
-fsmr: cmapreduce_extra.o fsmr.o
-	mpic++ -g -O -o fsmr cmapreduce_extra.o fsmr.o -lmrmpi -ldftw
+du_by_owner.o: du_by_owner.c
+	mpicc -g -O -c du_by_owner.c
 
 
-test: fsmr
+du_by_owner: cmapreduce_extra.o fsmr.o du_by_owner.o
+	mpic++ -g -O -o du_by_owner cmapreduce_extra.o fsmr.o du_by_owner.o -lmrmpi -ldftw
+
+
+test: du_by_owner
 	@echo "$$TEST_INSTRUCTIONS"
-	mpirun -np 3 ./fsmr /opt/mrmpi-2013-09-17
+	mpirun -np 3 ./du_by_owner /opt/mrmpi-2013-09-17
 
 
-all: fsmr
+all: du_by_owner
 
 clean:
-	rm -f fsmr *.o *.stdout *.stderr output.*
+	rm -f du_by_owner *.o *.stdout *.stderr output.*

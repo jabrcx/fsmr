@@ -1,4 +1,5 @@
 fsmr
+du_by_owner
 *.o
 *.stdout
 *.stderr

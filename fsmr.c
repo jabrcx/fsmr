@@ -7,81 +7,54 @@ All rights reserved.
 
 
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/stat.h>
 
 #include <mpi.h>
 #include <libdftw.h>
 #include <cmapreduce.h>
 #include <cmapreduce_extra.h>
 
+#include "fsmr.h"
 
-//the keys (easier than using strings "count" and "size")
-static char count_key = 1;
-static char size_key = 2;
+//handles for the callbacks
+map_cb_t map_cb;
+reduce_cb_t reduce_cb;
 
-static void *mrg;
-static void *kvg;
+//the MapReduce "object"
+void *mrg;
 
+//the KeyValue "object" (the one in mrg)
+void *kvg;
 
-static int mymap(const char *fpath, const struct stat *sb, int tflag) {
-	off_t size;
-	
-	switch (tflag) {
-		case FTW_D:
-			return 0;
-		case FTW_DNR:
-			fprintf(stderr, "unreadable directory: %s\n", fpath);
-			return 1;
-		case FTW_NS:
-			fprintf(stderr, "unstatable file: %s\n", fpath);
-			return 0;
-		default: {
-			//ignore symlinks
-			if (!S_ISLNK(sb->st_mode)) {
-				size = sb->st_size;
-				MR_kv_add(kvg, &size_key, 1, (char*)&size, sizeof(off_t));
-				
-				//the value here in theory is always 1, so don't even bother, just use NULL
-				MR_kv_add(kvg, &count_key, 1, NULL, 0); 
-			}
-			return 0;
-		}
-	}
+//wrapper for the exact callback form that dftw expects
+static int _map_wrap(const char *fpath, const struct stat *sb, int typeflag) {
+	return map_cb(fpath, sb, typeflag, kvg);
 }
 
-void myreduce(char *key, int keybytes, char *multivalue, int nvalues, int *valuebytes, void *kv, void *ptr) {
-	if (*key==count_key) {
-		printf("total path count: %d\n", nvalues);
-	} else if (*key==size_key) {
-		uint64_t totalsize = 0;
-
-		int i;
-		int offset = 0;
-		for (i=0; i<nvalues; i++) {
-			totalsize += *(uint64_t *)(multivalue+offset);
-			offset += valuebytes[i];
-		}
-		printf("total path size: %ld\n", totalsize);
-	}
+//wrapper for the exact callback form that MR_reduce expects
+static void _reduce_wrap(char *key, int keybytes, char *multivalue, int nvalues, int *valuebytes, void *kv, void *ptr) {
+	reduce_cb(key, keybytes, multivalue, nvalues, valuebytes);
 }
 
+int fsmr(const char *dirpath, map_cb_t map, reduce_cb_t reduce) {
+	//set the callback handles
+	map_cb = map;
+	reduce_cb = reduce;
 
-int main(int argc, char **argv) {
-	int myrank, nranks;
+	int finalize = 0;
+    int mpi_initialized;
 
-	if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
+	if(MPI_Initialized(&mpi_initialized) != MPI_SUCCESS) {
 		fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
-		exit(EXIT_FAILURE);
-	}
-	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-	MPI_Comm_size(MPI_COMM_WORLD, &nranks);
-	if (argc<2) {
-		if (myrank==0) fprintf(stderr, "usage: %s PATH...\n", argv[0]);
-		MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+        return -1;
+    }
+
+	if (MPI_Init(NULL, NULL) != MPI_SUCCESS) {
+		fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
+		return -1;
 	}
 
 	MPI_Comm *mrcomm = (MPI_Comm*)malloc(sizeof(MPI_Comm));
@@ -92,16 +65,16 @@ int main(int argc, char **argv) {
 
 	MR_open(mrg);
 	kvg = MR_get_kv(mrg);
-	dftw(argv[1], mymap);
+	dftw(dirpath, _map_wrap);
 	MR_close(mrg);
 
 	MR_collate(mrg, NULL);
-	MR_reduce(mrg, &myreduce, NULL);
+	MR_reduce(mrg, &_reduce_wrap, NULL);
 	MR_destroy(mrg);
 
 	MPI_Comm_free(mrcomm);
 	MPI_Finalize();
 	free(mrcomm);
 	
-	exit(EXIT_SUCCESS);
+	return 0;
 }

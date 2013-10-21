@@ -1,3 +1,6 @@
+love dftw, but need a way to get data out
+dftw is a general map operation... one general way to manage output is as a "reduce".
+
 why use dftw and not mrmpi's built-in recursion?
 	dftw is specialized for file tree walking, with performance analysis
 	dftw allows callbacks on all filesystem entities, including directories, too.
