@@ -5,7 +5,7 @@ in a filesystem hierarchy.  It's built using MPI, libdftw[1], and libmrmpi[2].
 
 I love dftw, but I need a way to combine and retrieve output.  dftw is a 
 general "map" operation... so one general way to manage output is as a 
-"reduce".  That's when I found mrmpi.
+"reduce".  That's how I found mrmpi.
 
 Why use dftw and not mrmpi's built-in recursion?  That's an open question.  But 
 dftw is specialized for file tree walking, with performance analysis to back it 
@@ -25,6 +25,3 @@ examples directory.
 [4] For version 17Sep13, apply the patch 
     mrmpi-17Sep13.missing_indirection_on_strings.patch in the misc/ directory 
     in this repo.
-
-Copyright (c) 2013, John A. Brunelle
-All rights reserved.
