@@ -44,36 +44,47 @@ int fsmr(const char *dirpath, map_cb_t map, reduce_cb_t reduce) {
 	map_cb = map;
 	reduce_cb = reduce;
 
+	//MPI_Init if necessary
 	int finalize = 0;
     int mpi_initialized;
-
-	if(MPI_Initialized(&mpi_initialized) != MPI_SUCCESS) {
-		fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
+	if (MPI_Initialized(&mpi_initialized)!=MPI_SUCCESS) {
+		fprintf(stderr, "*** ERROR *** unable to test if MPI initialized\n");
         return -1;
     }
-
-	if (MPI_Init(NULL, NULL) != MPI_SUCCESS) {
-		fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
-		return -1;
+	if (!mpi_initialized) {
+		if (MPI_Init(NULL, NULL)!=MPI_SUCCESS) {
+			fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
+			return -1;
+		}
+		finalize = 1;
 	}
 
+	//use a separate communicator
 	MPI_Comm *mrcomm = (MPI_Comm*)malloc(sizeof(MPI_Comm));
 	MPI_Comm_dup(MPI_COMM_WORLD, mrcomm);
 	MPI_Comm_set_name(*mrcomm, "MapReduce-MPI Comm");
 
+	//init
 	mrg = MR_create(*mrcomm);
 
+	//map
 	MR_open(mrg);
-	kvg = MR_get_kv(mrg);
+	kvg = MR_get_kv(mrg);  //this is custom add-on; see cmapreduce_extra.cpp
 	dftw(dirpath, _map_wrap);
 	MR_close(mrg);
 
+	//shuffle
 	MR_collate(mrg, NULL);
-	MR_reduce(mrg, &_reduce_wrap, NULL);
-	MR_destroy(mrg);
 
+	//reduce
+	MR_reduce(mrg, &_reduce_wrap, NULL);
+
+	//finalize
+	MR_destroy(mrg);
 	MPI_Comm_free(mrcomm);
-	MPI_Finalize();
+	if (finalize) {
+		MPI_Finalize();
+	}
 	free(mrcomm);
 
 	return 0;
