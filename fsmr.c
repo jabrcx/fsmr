@@ -46,11 +46,11 @@ int fsmr(const char *dirpath, map_cb_t map, reduce_cb_t reduce) {
 
 	//MPI_Init if necessary
 	int finalize = 0;
-    int mpi_initialized;
+	int mpi_initialized;
 	if (MPI_Initialized(&mpi_initialized)!=MPI_SUCCESS) {
 		fprintf(stderr, "*** ERROR *** unable to test if MPI initialized\n");
-        return -1;
-    }
+		return -1;
+	}
 	if (!mpi_initialized) {
 		if (MPI_Init(NULL, NULL)!=MPI_SUCCESS) {
 			fprintf(stderr, "*** ERROR *** unable to initialize MPI\n");
