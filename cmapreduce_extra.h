@@ -1,11 +1,3 @@
-/*
-
-Copyright (c) 2013, John A. Brunelle
-All rights reserved.
-
-*/
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif

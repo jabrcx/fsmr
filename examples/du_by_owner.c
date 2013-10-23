@@ -13,14 +13,10 @@ All rights reserved.
 
 #include "fsmr.h"
 
-//the keys (easier than using strings "count" and "size")
-static char count_key = 1;
-static char size_key = 2;
-
 static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
 	off_t size;
 	uid_t uid;
-	
+
 	switch (tflag) {
 		case FTW_D:
 			return 0;
@@ -35,7 +31,6 @@ static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
 			if (!S_ISLNK(sb->st_mode)) {
 				size = sb->st_size;
 				uid  = sb->st_uid;
-				//MR_kv_add(kv, &size_key, 1, (char*)&size, sizeof(off_t));
 				MR_kv_add(kv, (char*)&uid, sizeof(uid_t), (char*)&size, sizeof(off_t));
 			}
 			return 0;

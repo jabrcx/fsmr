@@ -1,11 +1,3 @@
-/*
-
-Copyright (c) 2013, John A. Brunelle
-All rights reserved.
-
-*/
-
-
 #include "cmapreduce_extra.h"
 #include "mapreduce.h"
 #include "keyvalue.h"

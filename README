@@ -1,20 +1,29 @@
-fsmr -- filesystem mapreduce
+fsmr -- run a mapreduce on a filesystem hierarchy
 
-This is for running a mapreduce where the inputs are every entity in a 
-filesystem hierarchy.  It's built using libdftw[1] and libmrmpi[2].
+This is for running a C mapreduce algorithm where the inputs are every entity 
+in a filesystem hierarchy.  It's built using MPI, libdftw[1], and libmrmpi[2].
 
 I love dftw, but I need a way to combine and retrieve output.  dftw is a 
 general "map" operation... so one general way to manage output is as a 
-"reduce".
+"reduce".  That's when I found mrmpi.
 
-Why use dftw and not mrmpi's built-in recursion?  dftw is specialized for file 
-tree walking, with performance analysis to back it up (though I have not 
-compared).  Also, dftw allows callbacks on all filesystem entities, including 
-directories, too.
+Why use dftw and not mrmpi's built-in recursion?  That's an open question.  But 
+dftw is specialized for file tree walking, with performance analysis to back it 
+up[3].  Also, dftw easily accommodates callbacks on all filesystem entities, 
+including directories (it has the same interface as ftw(3)).  This also helps 
+implement more robust error handling.
+
+To build libfsmr.so, install libdftw and mrmpi[4] and run `make' here.  See 
+examples/du_by_owner.c for a simple example of how to write a map() and 
+reduce() and call fsmr; export TEST_ARGS=/some/path and run `make test' in the 
+examples directory.
 
 [1] https://github.com/hpc/libdftw
 [2] http://mapreduce.sandia.gov/
-
+[3] http://dl.acm.org/citation.cfm?id=2389114
+[4] For version 17Sep13, apply the patch 
+    mrmpi-17Sep13.missing_indirection_on_strings.patch in the misc/ directory 
+	in this repo.
 
 Copyright (c) 2013, John A. Brunelle
 All rights reserved.
