@@ -1,6 +1,6 @@
-diff -rupN a/cmapreduce.h b/cmapreduce.h
---- a/cmapreduce.h	2011-01-27 17:11:45.000000000 -0500
-+++ b/cmapreduce.h	2013-10-22 22:47:06.829436153 -0400
+diff -rupN a/src/cmapreduce.h b/src/cmapreduce.h
+--- a/src/cmapreduce.h	2011-01-27 17:11:45.000000000 -0500
++++ b/src/cmapreduce.h	2013-10-22 22:47:06.829436153 -0400
 @@ -48,12 +48,12 @@ uint64_t MR_map(void *MRptr, int nmap,
  uint64_t MR_map_add(void *MRptr, int nmap,
  		    void (*mymap)(int, void *KVptr, void *APPptr),
