@@ -25,6 +25,3 @@ examples directory.
 [4] For version 17Sep13, apply the patch 
     mrmpi-17Sep13.missing_indirection_on_strings.patch in the misc/ directory 
     in this repo.
-
-Copyright (c) 2013, John A. Brunelle
-All rights reserved.
