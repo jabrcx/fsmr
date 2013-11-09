@@ -6,8 +6,8 @@
 
 CC = mpicc
 CPP = mpic++
-CFLAGS += -g -O0 -fPIC
-CPPFLAGS += -g -O0 -fPIC
+CFLAGS += -g -fPIC
+CPPFLAGS += -g -fPIC
 LDFLAGS +=
 
 all: libfsmr.so
