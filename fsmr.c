@@ -15,8 +15,8 @@ All rights reserved.
 #include <mpi.h>
 #include <libdftw.h>
 #include <cmapreduce.h>
-#include <cmapreduce_extra.h>
 
+#include "cmapreduce_extra.h"
 #include "fsmr.h"
 
 //handles for the callbacks
