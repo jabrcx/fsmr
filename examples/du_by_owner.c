@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	fprintf(stdout, "Walking with root as: `%s'\n", argv[1]);
 
 	if (fsmr(argv[1], map, reduce)) {
-		fprintf(stderr, "*** ERROR *** fsmr failed\n", argv[0]);
+		fprintf(stderr, "*** ERROR *** %s failed\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
