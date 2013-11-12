@@ -10,7 +10,7 @@ All rights reserved.
 #include <stdint.h>
 
 #include <libdftw.h>
-
+#include <cmapreduce.h>
 #include "fsmr.h"
 
 //the map function
