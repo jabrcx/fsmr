@@ -1,24 +1,27 @@
-fsmr -- run a mapreduce on a filesystem hierarchy
+fsmr is for running a mapreduce algorithm where the inputs are every entity in 
+a filesystem hierarchy.  It is a combination of two excellent pieces of 
+software -- libcircle/libdftw[1-3] (for the map) and libmrmpi[4] (for the 
+reduce).  It is a distributed algorithm using MPI and intended to run on 
+clusters with storage that scales well under such applications.
 
-This is for running a C mapreduce algorithm where the inputs are every entity 
-in a filesystem hierarchy.  It's built using MPI, libdftw[1], and libmrmpi[2].
+How do dftw and mrmpi complement each other in fsmr?
 
-I love dftw, but I need a way to combine and retrieve output.  dftw is a 
-general "map" operation... so one general way to manage output is as a 
-"reduce".  That's how I found mrmpi.
+    * dftw has no built-in way to combine and process output; mrmpi provides 
+      the data structures and reduce algorithm for doing so
 
-Why use dftw and not mrmpi's built-in recursion?  That's an open question.  But 
-dftw is specialized for file tree walking, with performance analysis to back it 
-up[3].  Also, dftw easily accommodates callbacks on all filesystem entities, 
-including directories (it has the same interface as ftw(3)).  This also helps 
-implement more robust error handling.  However, I have not yet compared the 
-performance of the two.
+    * mrmpi's built-in file tree walking is a serial step performed before the 
+      map and is not designed to scale to processing hundreds of millions of 
+      files like dftw is
+
+    * dftw's map more easily accommodates callbacks on all filesystem entities, 
+      including directories -- it has the same interface as ftw(3)
 
 To build libfsmr.so, install libdftw and mrmpi and run `make' here.  See 
-examples/du_by_owner.c for a simple example of how to write a map() and 
-reduce() and call fsmr; export TEST_ARGS=/some/path and run `make test' in the 
-examples directory.
+examples/fsmr.du_by_owner/example.c for a simple example of how to write a 
+map() and reduce() and call fsmr; export TEST_ARGS=/some/path and run 
+`make test' in that directory.
 
-[1] https://github.com/hpc/libdftw
-[2] http://mapreduce.sandia.gov/
-[3] http://dl.acm.org/citation.cfm?id=2389114
+[1] http://dl.acm.org/citation.cfm?id=2389114
+[2] https://github.com/hpc/libcircle
+[3] https://github.com/hpc/libdftw
+[4] http://mapreduce.sandia.gov/

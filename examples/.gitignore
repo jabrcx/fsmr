@@ -1,6 +1,5 @@
-example
-du_by_owner
 *.o
 *.stdout
 *.stderr
 output.*
+example

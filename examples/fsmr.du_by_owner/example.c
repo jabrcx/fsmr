@@ -11,13 +11,14 @@ All rights reserved.
 
 #include <libdftw.h>
 #include <cmapreduce.h>
-#include "fsmr.h"
+#include <fsmr.h>
 
 //the map function
 //see ftw(3) man page (dftw is basically identical)
 static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
 	off_t size;
 	uid_t uid;
+
 
 	switch (tflag) {
 		case FTW_D:
@@ -30,14 +31,14 @@ static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
 		case FTW_NS:
 			//the stat(2) call failed on fpath, which is not a symbolic link
 			fprintf(stderr, "unstatable file: %s\n", fpath);
-			return 0;
+			return 1;
 		default: {
 			//(FTW_F)
 			//ignore symlinks
 			if (!S_ISLNK(sb->st_mode)) {
 				size = sb->st_size;
 				uid  = sb->st_uid;
-				//emit a {"uid":size} key/value
+				//emit a {uid:size} key/value
 				MR_kv_add(kv, (char*)&uid, sizeof(uid_t), (char*)&size, sizeof(off_t));
 			}
 			return 0;
@@ -70,7 +71,7 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(stdout, "Walking with root as: `%s'\n", argv[1]);
+	fprintf(stdout, "recursing directory: %s\n", argv[1]);
 
 	if (fsmr(argv[1], map, reduce)) {
 		fprintf(stderr, "*** ERROR *** %s failed\n", argv[0]);
