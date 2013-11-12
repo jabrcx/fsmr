@@ -28,7 +28,7 @@ all: $(PROGS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 du_by_owner: du_by_owner.o
-	$(CPP) $(CPPFLAGS) $(LDFLAGS) du_by_owner.o -lmrmpi -ldftw -lfsmr -o du_by_owner
+	$(CPP) $(CPPFLAGS) $(LDFLAGS) $< -lfsmr -ldftw -lmrmpi -o $@
 
 test_args:
 ifndef TEST_ARGS
