@@ -42,7 +42,7 @@ endif
 
 test: $(PROG) test_args
 	@echo "$$TEST_INSTRUCTIONS"
-	mpirun -np 3 --mca btl self,tcp ./$(PROG) $(TEST_ARGS)
+	LD_LIBRARY_PATH=../..:"$$LD_LIBRARY_PATH" mpirun -np 3 --mca btl self,tcp ./$(PROG) $(TEST_ARGS)
 
 
 #--- cleaning

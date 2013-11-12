@@ -4,14 +4,29 @@
 #
 
 
+#--config
+
 CC = mpicc
 CPP = mpic++
-CFLAGS += -g -O0 -fPIC -I..
-CPPFLAGS += -g -O0 -fPIC
-LDFLAGS += -L..
+CFLAGS += -fPIC -I../..
+CPPFLAGS += -fPIC
+LDFLAGS += -L../..
 
-PROGS = du_by_owner
 
+#--- building
+
+PROG = example
+
+all: $(PROG)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(PROG): $(PROG).o
+	$(CPP) $(LDFLAGS) $< -lfsmr -ldftw -lmrmpi -o $@
+
+
+#--- testing
 
 define TEST_INSTRUCTIONS
 
@@ -21,15 +36,6 @@ double check total size against:
 endef
 export TEST_INSTRUCTIONS
 
-
-all: $(PROGS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-du_by_owner: du_by_owner.o
-	$(CPP) $(CPPFLAGS) $(LDFLAGS) $< -lfsmr -ldftw -lmrmpi -o $@
-
 test_args:
 ifndef TEST_ARGS
 		$(warning `make test' requires the TEST_ARGS environment variable be set.)
@@ -38,9 +44,12 @@ ifndef TEST_ARGS
 		$(error You must set the TEST_ARGS environment variable.)
 endif
 
-test: $(PROGS) test_args
+test: $(PROG) test_args
 	@echo "$$TEST_INSTRUCTIONS"
-	LD_LIBRARY_PATH=..:"$$LD_LIBRARY_PATH" mpirun -np 3 ./du_by_owner $(TEST_ARGS)
+	LD_LIBRARY_PATH=../..:"$$LD_LIBRARY_PATH" mpirun -np 3 --mca btl self,tcp ./$(PROG) $(TEST_ARGS)
+
+
+#--- cleaning
 
 clean:
-	rm -f $(PROGS) *.o *.stdout *.stderr output.*
+	rm -f $(PROG) *.o *.so
