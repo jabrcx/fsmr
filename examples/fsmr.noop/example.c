@@ -3,7 +3,7 @@
 
 #include <libdftw.h>
 #include <cmapreduce.h>
-#include "fsmr.h"
+#include <fsmr.h>
 
 
 static int map(const char *fpath, const struct stat *sb, int tflag, void *kv) {
